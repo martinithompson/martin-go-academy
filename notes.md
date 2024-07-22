@@ -4,6 +4,11 @@ filename: xxx_test.go
 start test functions with 'Test'
 takes arg t *testing.T
 
+BENCHMARKING
+
+When the benchmark code is executed, it runs b.N times and measures how long it takes.
+To run: go test -bench=.
+
 
 STRINGS
 

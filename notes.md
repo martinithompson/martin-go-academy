@@ -3,6 +3,7 @@ TESTING
 filename: xxx_test.go
 start test functions with 'Test'
 takes arg t *testing.T
+coverage: go test -cover
 
 BENCHMARKING
 

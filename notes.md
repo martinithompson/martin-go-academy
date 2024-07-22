@@ -19,3 +19,7 @@ STRINGS
 FUNCTIONS
 
 args of same type: e.g. (got string, want string) you can shorten to (got, want string)
+
+ARRAYS/SLICES
+
+slices.Equal - use for equality

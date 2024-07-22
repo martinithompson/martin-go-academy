@@ -23,3 +23,11 @@ args of same type: e.g. (got string, want string) you can shorten to (got, want 
 ARRAYS/SLICES
 
 slices.Equal - use for equality
+
+INTERFACES
+
+e.g. 
+type Shape interface {
+	Area() float64
+}
+In Go interface resolution is implicit. If the type you pass in matches what the interface is asking for, it will compile.

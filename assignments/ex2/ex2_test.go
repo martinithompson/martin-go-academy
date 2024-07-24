@@ -1,21 +1,22 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
+	"os"
 	"testing"
 )
 
 func TestDisplayName(t *testing.T) {
-	got := DisplayName("Martin", "Ian", "Thompson")
-	want := "Martin Ian Thompson"
+	buffer := &bytes.Buffer{}
+	DisplayName(buffer, "Martin", "Ian", "Thompson")
+	want := "Your full name is Martin Ian Thompson"
 
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	if buffer.String() != want {
+		t.Errorf("got %q want %q", buffer.String(), want)
 	}
 }
 
 func ExampleDisplayName() {
-	fullName := DisplayName("Martin", "Ian", "Thompson")
-	fmt.Println(fullName)
-	// Output: Martin Ian Thompson
+	DisplayName(os.Stdout, "Martin", "Ian", "Thompson")
+	// Output: Your full name is Martin Ian Thompson
 }

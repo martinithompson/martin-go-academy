@@ -25,29 +25,28 @@ func TestRunRolls(t *testing.T) {
 	randomiser := SpyRandomiser{}
 	buffer := &bytes.Buffer{}
 	runRolls(1, randomiser, buffer)
-
 	want := "Roll 8: NEUTRAL\n"
 
-	if buffer.String() != want {
-		t.Errorf("got %q want %q", buffer.String(), want)
-	}
+	assertResult(t, buffer.String(), want)
 }
 
 func TestGetRollResult(t *testing.T) {
-	assertResult :=
-		func(t testing.TB, got, want string) {
-			if got != want {
-				t.Errorf("got %q want %q", got, want)
-			}
-		}
 	t.Run("snake eyes", func(t *testing.T) {
 		got := getRollResult(2)
 		want := "Roll 2: SNAKE-EYES-CRAPS\n"
+
 		assertResult(t, got, want)
 	})
 	t.Run("neutral", func(t *testing.T) {
 		got := getRollResult(4)
 		want := "Roll 4: NEUTRAL\n"
+
 		assertResult(t, got, want)
 	})
+}
+
+func assertResult(t testing.TB, got, want string) {
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
 }

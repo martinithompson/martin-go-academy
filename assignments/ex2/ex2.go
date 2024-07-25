@@ -8,8 +8,12 @@ import (
 	"strings"
 )
 
-func DisplayName(out io.Writer, f, m, l string) {
-	fmt.Fprintf(out, "Your full name is "+f+" "+m+" "+l)
+func DisplayText(out io.Writer, text string) {
+	fmt.Fprint(out, text)
+}
+
+func getFullName(f, m, l string) string {
+	return f + " " + m + " " + l
 }
 
 func getName(in *bufio.Reader, out io.Writer, nameType string) string {
@@ -25,5 +29,7 @@ func main() {
 	middleName := getName(reader, os.Stdout, "middle")
 	lastName := getName(reader, os.Stdout, "last")
 
-	DisplayName(os.Stdout, firstName, middleName, lastName)
+	fullName := getFullName(firstName, middleName, lastName)
+
+	DisplayText(os.Stdout, fullName)
 }

@@ -6,17 +6,26 @@ import (
 	"testing"
 )
 
-func TestDisplayName(t *testing.T) {
+func TestDisplayText(t *testing.T) {
 	buffer := &bytes.Buffer{}
-	DisplayName(buffer, "Martin", "Ian", "Thompson")
-	want := "Your full name is Martin Ian Thompson"
+	DisplayText(buffer, "Martin Ian Thompson")
+	want := "Martin Ian Thompson"
 
 	if buffer.String() != want {
 		t.Errorf("got %q want %q", buffer.String(), want)
 	}
 }
 
-func ExampleDisplayName() {
-	DisplayName(os.Stdout, "Martin", "Ian", "Thompson")
-	// Output: Your full name is Martin Ian Thompson
+func TestGetFullName(t *testing.T) {
+	got := getFullName("Bob", "The", "Builder")
+	want := "Bob The Builder"
+
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
+}
+
+func ExampleDisplayText() {
+	DisplayText(os.Stdout, "Martin Ian Thompson")
+	// Output: Martin Ian Thompson
 }

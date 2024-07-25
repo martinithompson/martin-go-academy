@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+)
 
 type SpyRandomiser struct{}
 
@@ -10,7 +13,7 @@ func (s SpyRandomiser) Generate(_ int) int {
 
 func TestRollDice(t *testing.T) {
 	randomiser := SpyRandomiser{}
-	got := RollDice(randomiser)
+	got := rollDice(randomiser)
 	want := 4
 
 	if got != want {
@@ -18,11 +21,17 @@ func TestRollDice(t *testing.T) {
 	}
 }
 
-// test create array of 2 dice rolls
+func TestRunRolls(t *testing.T) {
+	randomiser := SpyRandomiser{}
+	buffer := &bytes.Buffer{}
+	runRolls(1, randomiser, buffer)
 
-// test roll x(50) times - store in array of scores
+	want := "Roll 8: NEUTRAL\n"
 
-// test loop through array and output score, NATURAL etc
+	if buffer.String() != want {
+		t.Errorf("got %q want %q", buffer.String(), want)
+	}
+}
 
 func TestGetRollResult(t *testing.T) {
 	assertResult :=
@@ -33,12 +42,12 @@ func TestGetRollResult(t *testing.T) {
 		}
 	t.Run("snake eyes", func(t *testing.T) {
 		got := getRollResult(2)
-		want := "Roll 2: SNAKE-EYES-CRAPS"
+		want := "Roll 2: SNAKE-EYES-CRAPS\n"
 		assertResult(t, got, want)
 	})
 	t.Run("neutral", func(t *testing.T) {
 		got := getRollResult(4)
-		want := "Roll 4: NEUTRAL"
+		want := "Roll 4: NEUTRAL\n"
 		assertResult(t, got, want)
 	})
 }

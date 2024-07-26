@@ -1,0 +1,10 @@
+Alice Johnson,14-03-1988
+Michael Smith,22-07-1992
+Emily Davis,05-01-1995
+John Williams,30-11-1983
+Sarah Miller,17-07-1990
+David Brown,09-09-1985
+Jessica Wilson,28-02-1991
+Daniel Taylor,15-08-1987
+Laura Martinez,25-04-1993
+James Anderson,12-10-1986

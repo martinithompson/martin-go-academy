@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
+	"log"
 	"os"
 )
 
@@ -24,22 +26,22 @@ func (t Todo) Description() string {
 }
 
 type Todos struct {
-	items []Todo
+	Items []Todo
 }
 
 func (t *Todos) Add(item string) {
 	todo := Todo{Item: item}
-	t.items = append(t.items, todo)
+	t.Items = append(t.Items, todo)
 }
 
 func (t Todos) PrintDescriptions(out io.Writer) {
-	for _, todo := range t.items {
+	for _, todo := range t.Items {
 		fmt.Fprintln(out, todo.Description())
 	}
 }
 
 func (ts Todos) Json() string {
-	json, _ := json.Marshal(ts.items)
+	json, _ := json.Marshal(ts.Items)
 	return string(json)
 }
 
@@ -52,26 +54,29 @@ func (ts Todos) Save(out io.Writer) error {
 	return nil
 }
 
+func (ts *Todos) Load(fileSystem fs.FS, fileName string) {
+	todosFile, err := fileSystem.Open(fileName)
+	if err != nil {
+		log.Fatalf("failed to open file: %v", err)
+	}
+	defer todosFile.Close()
+
+	content, err := io.ReadAll(todosFile)
+	if err != nil {
+		log.Fatalf("failed to read file: %v", err)
+	}
+
+	var loadedTodos []Todo
+	jsonErr := json.Unmarshal([]byte(content), &loadedTodos)
+	if jsonErr != nil {
+		fmt.Println("Error unmarshalling JSON:", jsonErr)
+	}
+	ts.Items = loadedTodos
+}
+
 func main() {
-	todoItems := []string{
-		"Wash the car",
-		"Buy groceries",
-		"Read book",
-		"Clean the house",
-		"Pay bills",
-		"Call the bank",
-		"Walk the dog",
-		"Exercise",
-		"Plan holiday",
-		"Write report",
-	}
-
-	todos := Todos{}
-	for _, item := range todoItems {
-		todos.Add(item)
-	}
-
-	todos.PrintDescriptions(os.Stdout)
-	outputFile, _ := os.Create("./output.json")
-	todos.Save(outputFile)
+	fs := os.DirFS(".")
+	newTodos := Todos{}
+	newTodos.Load(fs, "todos.json")
+	newTodos.PrintDescriptions(os.Stdout)
 }

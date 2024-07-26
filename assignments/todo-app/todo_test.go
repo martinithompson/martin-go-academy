@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
+	"reflect"
 	"testing"
+	"testing/fstest"
 )
 
 var washCar = Todo{Item: "Wash the car"}
 var bookHol = Todo{Item: "Book holiday"}
-var todos = Todos{items: []Todo{washCar, bookHol}}
+var todos = Todos{Items: []Todo{washCar, bookHol}}
 
 func TestTodo(t *testing.T) {
 	t.Run("todo description", func(t *testing.T) {
@@ -53,9 +55,34 @@ func TestFormatCompleted(t *testing.T) {
 	})
 }
 
+func TestLoadTodos(t *testing.T) {
+	json := "[{\"Item\":\"Wash the car\",\"Completed\":false},{\"Item\":\"Book holiday\",\"Completed\":false}]"
+	fs := fstest.MapFS{
+		"todos.json": {Data: []byte(json)},
+	}
+	newTodos := Todos{}
+	newTodos.Load(fs, "todos.json")
+
+	got := len(newTodos.Items)
+	want := 2
+
+	if got != want {
+		t.Errorf("got %d todos, wanted %d todos", got, want)
+	}
+
+	assertTodos(t, newTodos, todos)
+}
+
 func assertStrings(t testing.TB, got, want string) {
 	t.Helper()
 	if got != want {
 		t.Errorf("got %q want %q ", got, want)
+	}
+}
+
+func assertTodos(t *testing.T, got, want Todos) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %+v, want %+v", got, want)
 	}
 }

@@ -1,10 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+)
 
 type Todo struct {
 	Item      string
-	completed bool
+	Completed bool
 }
 
 func formatCompleted(c bool) string {
@@ -14,8 +19,28 @@ func formatCompleted(c bool) string {
 	return "no"
 }
 
-func (t Todo) Display() string {
-	return fmt.Sprintf("Item: %q, Completed: %v", t.Item, formatCompleted(t.completed))
+func (t Todo) Description() string {
+	return fmt.Sprintf("Item: %q, Completed: %v", t.Item, formatCompleted(t.Completed))
+}
+
+type Todos struct {
+	items []Todo
+}
+
+func (t *Todos) Add(item string) {
+	todo := Todo{Item: item}
+	t.items = append(t.items, todo)
+}
+
+func (t Todos) PrintDescriptions(out io.Writer) {
+	for _, todo := range t.items {
+		fmt.Fprintln(out, todo.Description())
+	}
+}
+
+func (ts Todos) OutputJson() string {
+	json, _ := json.Marshal(ts.items)
+	return string(json)
 }
 
 func main() {
@@ -32,12 +57,10 @@ func main() {
 		"Write report",
 	}
 
-	todos := make([]Todo, 10)
-	for i, item := range todoItems {
-		todos[i] = Todo{Item: item}
+	todos := Todos{}
+	for _, item := range todoItems {
+		todos.Add(item)
 	}
 
-	for _, todo := range todos {
-		fmt.Println(todo.Display())
-	}
+	todos.PrintDescriptions(os.Stdout)
 }

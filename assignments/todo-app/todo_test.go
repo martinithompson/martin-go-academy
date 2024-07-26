@@ -26,13 +26,17 @@ func TestTodos(t *testing.T) {
 		assertStrings(t, got, want)
 	})
 	t.Run("todos output json", func(t *testing.T) {
-		got := todos.OutputJson()
+		got := todos.Json()
 		want := "[{\"Item\":\"Wash the car\",\"Completed\":false},{\"Item\":\"Book holiday\",\"Completed\":false}]"
 
 		assertStrings(t, got, want)
 	})
 	t.Run("todos save", func(t *testing.T) {
+		buffer := &bytes.Buffer{}
+		todos.Save(buffer)
 
+		want := "[{\"Item\":\"Wash the car\",\"Completed\":false},{\"Item\":\"Book holiday\",\"Completed\":false}]"
+		assertStrings(t, buffer.String(), want)
 	})
 }
 

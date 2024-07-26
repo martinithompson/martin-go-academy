@@ -38,9 +38,18 @@ func (t Todos) PrintDescriptions(out io.Writer) {
 	}
 }
 
-func (ts Todos) OutputJson() string {
+func (ts Todos) Json() string {
 	json, _ := json.Marshal(ts.items)
 	return string(json)
+}
+
+func (ts Todos) Save(out io.Writer) error {
+	_, err := out.Write([]byte(ts.Json()))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func main() {
@@ -63,4 +72,6 @@ func main() {
 	}
 
 	todos.PrintDescriptions(os.Stdout)
+	outputFile, _ := os.Create("./output.json")
+	todos.Save(outputFile)
 }

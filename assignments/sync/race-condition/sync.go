@@ -25,9 +25,9 @@ func NumberGenerator(out io.Writer, sleeper Sleeper, wg *sync.WaitGroup, amount 
 		start = 2
 	}
 	for i := start; i <= amount*2; i += 2 {
-		fmt.Fprintf(out, "Generated: %d\n", i)
 		sleeper.Sleep()
 		*values = append(*values, i)
+		fmt.Fprintf(out, "Generated: %d, Values: %v\n", i, *values)
 	}
 }
 

@@ -41,4 +41,15 @@ func TestNumberGenerator(t *testing.T) {
 	t.Run("odd numbers", func(t *testing.T) {
 		runTest(t, 5, false, []int{1, 3, 5, 7, 9})
 	})
+	t.Run("race condition", func(t *testing.T) {
+		buffer := &bytes.Buffer{}
+		spySleeper := &SpySleeper{}
+		wg := &sync.WaitGroup{}
+		wg.Add(2)
+		value := []int{}
+		NumberGenerator(buffer, spySleeper, wg, 5, &value, false)
+		NumberGenerator(buffer, spySleeper, wg, 5, &value, true)
+		wg.Wait()
+		assertEqual(t, value, []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+	})
 }

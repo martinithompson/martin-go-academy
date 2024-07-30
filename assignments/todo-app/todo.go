@@ -29,9 +29,14 @@ type Todos struct {
 	Items []Todo
 }
 
-func (t *Todos) Add(item string) {
-	todo := Todo{Item: item}
-	t.Items = append(t.Items, todo)
+func (t *Todos) AddTaskItems(items ...string) {
+	for _, item := range items {
+		t.Items = append(t.Items, Todo{Item: item})
+	}
+}
+
+func (t *Todos) AddTodoItems(items ...Todo) {
+	t.Items = append(t.Items, items...)
 }
 
 func (t Todos) PrintDescriptions(out io.Writer) {
@@ -50,7 +55,6 @@ func (ts Todos) Save(out io.Writer) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -71,10 +75,44 @@ func (ts *Todos) Load(fileSystem fs.FS, fileName string) {
 	if jsonErr != nil {
 		fmt.Println("Error unmarshalling JSON:", jsonErr)
 	}
-	ts.Items = loadedTodos
+	fmt.Println(loadedTodos)
+	ts.AddTodoItems(loadedTodos...)
 }
 
+var tasksToAdd = []string{"go shopping", "wash the car", "walk the dog", "do laundry", "pay bills",
+	"clean the house", "cook dinner", "read a book", "exercise", "call bank"}
+
 func main() {
+	// TODO - menu switch statement to choose exercise
+	// exerciseOne()
+	// exerciseTwo()
+	exerciseThree()
+	// exerciseFour()
+}
+
+// Print a list of 10 things to do
+func exerciseOne() {
+	todos := Todos{}
+	todos.AddTaskItems(tasksToAdd...)
+	todos.PrintDescriptions(os.Stdout)
+}
+
+// Display list of 10 things in json
+func exerciseTwo() {
+	todos := Todos{}
+	todos.AddTaskItems(tasksToAdd...)
+	fmt.Println(todos.Json())
+}
+
+func exerciseThree() {
+	todos := Todos{}
+	todos.AddTaskItems(tasksToAdd...)
+	outputFile, _ := os.Create("./output.json")
+	todos.Save(outputFile)
+}
+
+// read a todo list from a json file
+func exerciseFour() {
 	fs := os.DirFS(".")
 	newTodos := Todos{}
 	newTodos.Load(fs, "todos.json")

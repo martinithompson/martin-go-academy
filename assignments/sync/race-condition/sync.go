@@ -19,11 +19,7 @@ func (d *DefaultSleeper) Sleep() {
 	time.Sleep(2 * time.Second)
 }
 
-type Generator struct {
-	Value []int
-}
-
-func (g *Generator) AddNumber(out io.Writer, s Sleeper, even bool) {
+func generateNumber(s Sleeper, even bool) int {
 	s.Sleep()
 	var rn int
 	if even {
@@ -31,34 +27,36 @@ func (g *Generator) AddNumber(out io.Writer, s Sleeper, even bool) {
 	} else {
 		rn = rand.Intn(50)*2 + 1
 	}
-	g.Value = append(g.Value, rn)
-	fmt.Fprintf(out, "Updated value: %v\n", g.Value)
+	return rn
+}
+
+func addNumber(out io.Writer, wg *sync.WaitGroup, sleeper Sleeper, even bool, value *[]int) {
+	defer wg.Done()
+	gn := generateNumber(sleeper, even)
+	*value = append(*value, gn)
+	fmt.Fprintf(out, "Final value: %v\n", *value)
 }
 
 func main() {
-	generator := Generator{}
+	value := []int{}
 	sleeper := DefaultSleeper{}
-	fmt.Println("Generating...")
-
 	var wg sync.WaitGroup
 
+	fmt.Println("Generating...")
+
+	// add even numbers
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			generator.AddNumber(os.Stdout, &sleeper, true)
-		}()
+		go addNumber(os.Stdout, &wg, &sleeper, true, &value)
 	}
 
+	// add odd numbers
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			generator.AddNumber(os.Stdout, &sleeper, false)
-		}()
+		go addNumber(os.Stdout, &wg, &sleeper, false, &value)
 	}
 
 	wg.Wait()
-	fmt.Printf("Final value: %v\n", generator.Value)
+	fmt.Printf("Final value: %v\n", value)
 	fmt.Println("Done.")
 }

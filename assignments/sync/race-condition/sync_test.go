@@ -15,31 +15,29 @@ func (s *SpySleeper) Sleep() {
 }
 
 func TestGenerator(t *testing.T) {
-	buffer := &bytes.Buffer{}
-	g := &Generator{}
+	value := []int{}
 	var wg sync.WaitGroup
 	spySleeper := &SpySleeper{}
+	buffer := &bytes.Buffer{}
 
 	for i := 0; i < 1000; i++ {
 		wg.Add(1)
 		go func() {
-			defer wg.Done()
-			g.AddNumber(buffer, spySleeper, true)
+			addNumber(buffer, &wg, spySleeper, true, &value)
 		}()
 	}
 
 	for i := 0; i < 1000; i++ {
 		wg.Add(1)
 		go func() {
-			defer wg.Done()
-			g.AddNumber(buffer, spySleeper, false)
+			addNumber(buffer, &wg, spySleeper, false, &value)
 		}()
 	}
 
 	wg.Wait()
 
 	// The final length should be 2000 if there are no race conditions
-	if len(g.Value) != 2000 {
-		t.Errorf("expected value length to be 0, but got %d", len(g.Value))
+	if len(value) != 2000 {
+		t.Errorf("expected value length to be 2000, but got %d", len(value))
 	}
 }

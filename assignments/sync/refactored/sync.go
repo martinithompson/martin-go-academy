@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"sync"
 	"time"
@@ -15,31 +16,47 @@ type Sleeper interface {
 type DefaultSleeper struct{}
 
 func (d *DefaultSleeper) Sleep() {
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 }
 
-func NumberGenerator(out io.Writer, sleeper Sleeper, wg *sync.WaitGroup, amount int, values *[]int, evenNumbers bool) {
+func generateNumber(s Sleeper, even bool) int {
+	s.Sleep()
+	var rn int
+	if even {
+		rn = rand.Intn(51) * 2
+	} else {
+		rn = rand.Intn(50)*2 + 1
+	}
+	return rn
+}
+
+func addNumber(out io.Writer, wg *sync.WaitGroup, sleeper Sleeper, even bool, value *[]int) {
 	defer wg.Done()
-	start := 1
-	if evenNumbers {
-		start = 2
-	}
-	for i := start; i <= amount*2; i += 2 {
-		sleeper.Sleep()
-		*values = append(*values, i)
-		fmt.Fprintf(out, "Generated: %d, Values: %v\n", i, *values)
-	}
+	gn := generateNumber(sleeper, even)
+	*value = append(*value, gn)
+	fmt.Fprintf(out, "Final value: %v\n", *value)
 }
 
 func main() {
-	var wg sync.WaitGroup
-	var values []int
+	value := []int{}
 	sleeper := DefaultSleeper{}
+	var wg sync.WaitGroup
 
-	wg.Add(2)
-	go NumberGenerator(os.Stdout, &sleeper, &wg, 5, &values, true)
-	go NumberGenerator(os.Stdout, &sleeper, &wg, 5, &values, false)
-	fmt.Println("Running...")
+	fmt.Println("Generating...")
+
+	// add even numbers
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go addNumber(os.Stdout, &wg, &sleeper, true, &value)
+	}
+
+	// add odd numbers
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go addNumber(os.Stdout, &wg, &sleeper, false, &value)
+	}
+
 	wg.Wait()
-	fmt.Printf("Output: %v\n", values)
+	fmt.Printf("Final value: %v\n", value)
+	fmt.Println("Done.")
 }

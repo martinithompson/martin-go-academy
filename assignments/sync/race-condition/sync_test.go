@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"slices"
 	"sync"
 	"testing"
 )
@@ -15,41 +14,32 @@ func (s *SpySleeper) Sleep() {
 	s.Calls++
 }
 
-func TestNumberGenerator(t *testing.T) {
-	assertEqual := func(t *testing.T, got, want []int) {
-		if !slices.Equal(got, want) {
-			t.Errorf("got %v want %v", got, want)
-		}
-	}
-	runTest := func(t *testing.T, amount int, even bool, want []int) {
-		buffer := &bytes.Buffer{}
-		spySleeper := &SpySleeper{}
-		wg := &sync.WaitGroup{}
-		wg.Add(1)
-		value := []int{}
-		NumberGenerator(buffer, spySleeper, wg, amount, &value, even)
-		wg.Wait()
-		assertEqual(t, value, want)
+func TestGenerator(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	g := &Generator{}
+	var wg sync.WaitGroup
+	spySleeper := &SpySleeper{}
 
-		if spySleeper.Calls != amount {
-			t.Errorf("not enough calls to sleeper, want %d got %d", amount, spySleeper.Calls)
-		}
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			g.AddNumber(buffer, spySleeper, true)
+		}()
 	}
-	t.Run("even numbers", func(t *testing.T) {
-		runTest(t, 5, true, []int{2, 4, 6, 8, 10})
-	})
-	t.Run("odd numbers", func(t *testing.T) {
-		runTest(t, 5, false, []int{1, 3, 5, 7, 9})
-	})
-	t.Run("race condition", func(t *testing.T) {
-		buffer := &bytes.Buffer{}
-		spySleeper := &SpySleeper{}
-		wg := &sync.WaitGroup{}
-		wg.Add(2)
-		value := []int{}
-		NumberGenerator(buffer, spySleeper, wg, 5, &value, false)
-		NumberGenerator(buffer, spySleeper, wg, 5, &value, true)
-		wg.Wait()
-		assertEqual(t, value, []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-	})
+
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			g.AddNumber(buffer, spySleeper, false)
+		}()
+	}
+
+	wg.Wait()
+
+	// The final length should be 2000 if there are no race conditions
+	if len(g.Value) != 2000 {
+		t.Errorf("expected value length to be 0, but got %d", len(g.Value))
+	}
 }

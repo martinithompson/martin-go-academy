@@ -8,13 +8,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	todos "todo-app/project/todos"
 )
 
-// var tasksToAdd = []string{"go shopping", "wash the car", "walk the dog", "do laundry", "pay bills",
-// 	"clean the house", "cook dinner", "read a book", "exercise", "call bank"}
+var todoItems = todos.Todos{}
+var reader = bufio.NewReader(os.Stdin)
 
 func menu(out io.Writer) {
-	fmt.Fprintf(out, "\t*** To-Do Options***\n\tPlease enter an option number to continue:\n\t\n\t1: Add a new to-do item\n\t2: View all todos\n\t3: Update a todo item\n\t4: Delete a todo item\n")
+	fmt.Fprintf(out, "\t*** To-Do Options***\n\tPlease enter an option number to continue:\n\t\n\t1: Add a new to-do item\n\t2: View all todos\n\t3: Update a todo item\n\t4: Delete a todo item\n\t5: Exit\n")
 }
 
 func readOption(in *bufio.Reader, max int) (int, error) {
@@ -30,48 +31,68 @@ func readOption(in *bufio.Reader, max int) (int, error) {
 	return i, nil
 }
 
+func readItem(in *bufio.Reader) (string, error) {
+	item, err := in.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	item = strings.TrimSpace(item)
+	return item, nil
+}
+
+func handleOption(option int) {
+	switch option {
+	case 1:
+		fmt.Println("Add a todo")
+		addTodo(os.Stdin)
+	case 2:
+		fmt.Println("View todos")
+		viewTodos()
+	case 3:
+		fmt.Println("Update a todo")
+		updateTodo()
+	case 4:
+		fmt.Println("Delete a todo")
+		deleteTodo()
+	default:
+		fmt.Println("Goodbye")
+	}
+}
+
+func addTodo(out io.Writer) {
+	fmt.Fprintln(out, "Enter the task name: ")
+	item, _ := readItem(reader)
+	todoItems.AddTaskItems(item)
+}
+
+func viewTodos() {
+	todoItems.PrintDescriptions(os.Stdout)
+}
+
+func updateTodo() {
+	fmt.Println("To do")
+}
+
+func deleteTodo() {
+	fmt.Println("To do")
+}
+
 func main() {
-	reader := bufio.NewReader(os.Stdin)
+
 	menu(os.Stdout)
 	var option int
 	var err error
-	for {
-		option, err = readOption(reader, 4)
-		if err != nil {
-			fmt.Println("Invalid option, please enter 1-4:")
-		} else {
-			break
+	for option != 5 {
+		for {
+			option, err = readOption(reader, 5)
+			if err != nil {
+				fmt.Println("Invalid option, please enter 1-5:")
+			} else {
+				break
+			}
 		}
+
+		fmt.Printf("You selected option: %d\n", option)
+		handleOption(option)
 	}
-
-	fmt.Printf("You selected option: %d\n", option)
 }
-
-// Print a list of 10 things to do
-// func exerciseOne() {
-// 	todos := todos.Todos{}
-// 	todos.AddTaskItems(tasksToAdd...)
-// 	todos.PrintDescriptions(os.Stdout)
-// }
-
-// // Display list of 10 things in json
-// func exerciseTwo() {
-// 	todos := Todos{}
-// 	todos.AddTaskItems(tasksToAdd...)
-// 	fmt.Println(todos.Json())
-// }
-
-// func exerciseThree() {
-// 	todos := Todos{}
-// 	todos.AddTaskItems(tasksToAdd...)
-// 	outputFile, _ := os.Create("./output.json")
-// 	todos.Save(outputFile)
-// }
-
-// // read a todo list from a json file
-// func exerciseFour() {
-// 	fs := os.DirFS(".")
-// 	newTodos := Todos{}
-// 	newTodos.Load(fs, "todos.json")
-// 	newTodos.PrintDescriptions(os.Stdout)
-// }

@@ -18,6 +18,7 @@ func TestMenu(t *testing.T) {
 	2: View all todos
 	3: Update a todo item
 	4: Delete a todo item
+	5: Exit
 `
 		assertStrings(t, buffer.String(), want)
 	})

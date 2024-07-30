@@ -39,8 +39,8 @@ func (t *Todos) AddTodoItems(items ...Todo) {
 }
 
 func (t Todos) PrintDescriptions(out io.Writer) {
-	for _, todo := range t.Items {
-		fmt.Fprintln(out, todo.Description())
+	for i, todo := range t.Items {
+		fmt.Fprintf(out, "%d> %s\n", i+1, todo.Description())
 	}
 }
 

@@ -30,33 +30,47 @@ func generateNumber(s Sleeper, even bool) int {
 	return rn
 }
 
-func addNumber(out io.Writer, wg *sync.WaitGroup, sleeper Sleeper, even bool, value *[]int) {
+func queueNumber(wg *sync.WaitGroup, sleeper Sleeper, even bool, ch chan<- int) {
 	defer wg.Done()
 	gn := generateNumber(sleeper, even)
-	*value = append(*value, gn)
-	fmt.Fprintf(out, "Final value: %v\n", *value)
+	ch <- gn
+}
+
+func addNumbers(out io.Writer, ch <-chan int, value *[]int, mu *sync.Mutex) {
+	for num := range ch {
+		mu.Lock()
+		*value = append(*value, num)
+		fmt.Fprintf(out, "Current value: %v\n", *value)
+		mu.Unlock()
+	}
 }
 
 func main() {
 	value := []int{}
 	sleeper := DefaultSleeper{}
 	var wg sync.WaitGroup
+	var mu sync.Mutex
+	valuesChannel := make(chan int)
 
 	fmt.Println("Generating...")
 
-	// add even numbers
+	go addNumbers(os.Stdout, valuesChannel, &value, &mu)
+
+	// Add even numbers
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go addNumber(os.Stdout, &wg, &sleeper, true, &value)
+		go queueNumber(&wg, &sleeper, true, valuesChannel)
 	}
 
-	// add odd numbers
+	// Add odd numbers
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go addNumber(os.Stdout, &wg, &sleeper, false, &value)
+		go queueNumber(&wg, &sleeper, false, valuesChannel)
 	}
 
 	wg.Wait()
+	close(valuesChannel)
+
 	fmt.Printf("Final value: %v\n", value)
 	fmt.Println("Done.")
 }

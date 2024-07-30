@@ -30,7 +30,7 @@ func generateNumber(s Sleeper, even bool) int {
 	return rn
 }
 
-func queueNumber(wg *sync.WaitGroup, sleeper Sleeper, even bool, ch chan<- int) {
+func queueNumber(wg *sync.WaitGroup, sleeper Sleeper, even bool, ch chan int) {
 	defer wg.Done()
 	gn := generateNumber(sleeper, even)
 	ch <- gn

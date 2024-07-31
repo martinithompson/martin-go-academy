@@ -2,6 +2,7 @@ package todos
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -28,14 +29,22 @@ type Todos struct {
 	Items []Todo
 }
 
-func (t *Todos) AddTaskItems(items ...string) {
+func (ts *Todos) AddTaskItems(items ...string) {
 	for _, item := range items {
-		t.Items = append(t.Items, Todo{Item: item})
+		ts.Items = append(ts.Items, Todo{Item: item})
 	}
 }
 
-func (t *Todos) AddTodoItems(items ...Todo) {
-	t.Items = append(t.Items, items...)
+func (ts *Todos) AddTodoItems(items ...Todo) {
+	ts.Items = append(ts.Items, items...)
+}
+
+func (ts *Todos) DeleteTodoItem(index int) error {
+	if len(ts.Items) < index {
+		return errors.New("index out of range")
+	}
+	ts.Items = append(ts.Items[:index-1], ts.Items[index:]...)
+	return nil
 }
 
 func (t Todos) PrintDescriptions(out io.Writer) {

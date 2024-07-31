@@ -50,10 +50,9 @@ func handleOption(option int) {
 	case 3:
 		updateTodo(os.Stdin)
 	case 4:
-		fmt.Println("Delete a to-do")
-		deleteTodo()
+		deleteTodo(os.Stdin)
 	default:
-		fmt.Println("Goodbye")
+		fmt.Println("\tGoodbye!")
 	}
 }
 
@@ -99,12 +98,17 @@ func updateTodo(out io.Writer) {
 	}
 }
 
-func deleteTodo() {
-	fmt.Println("Enter the number of the item to delete:")
-	todoItems.PrintDescriptions(os.Stdout)
+func deleteTodo(out io.Writer) {
+	if len(todoItems.Items) > 0 {
+		fmt.Fprintln(out, "\t*** Delete a to-do ***")
+		fmt.Fprintf(out, "\tEnter the number of the item to delete:\n")
+		todoItems.PrintDescriptions(os.Stdout)
 
-	item, _ := readOption(reader, len(todoItems.Items))
-	todoItems.Items = append(todoItems.Items[:item-1], todoItems.Items[item:]...)
+		item, _ := readOption(reader, len(todoItems.Items))
+		todoItems.DeleteTodoItem(item)
+	} else {
+		fmt.Println("Your todo list is empty :-)")
+	}
 }
 
 func main() {

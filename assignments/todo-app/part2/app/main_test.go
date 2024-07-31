@@ -14,11 +14,11 @@ func TestMenu(t *testing.T) {
 		want := `	*** To-Do Options***
 	Please enter an option number to continue:
 	
-	1: Add a new to-do item
-	2: View all todos
-	3: Update a todo item
-	4: Delete a todo item
-	5: Exit
+	1) Add a new to-do item
+	2) View all todos
+	3) Update a todo item
+	4) Delete a todo item
+	5) Exit
 `
 		assertStrings(t, buffer.String(), want)
 	})
@@ -66,6 +66,22 @@ func TestReadOption(t *testing.T) {
 		assertError(t, err)
 		assertOption(t, option, 0)
 	})
+}
+
+func TestReadItem(t *testing.T) {
+	input := "new item\n"
+	reader := bufio.NewReader(strings.NewReader(input))
+	option, _ := readItem(reader)
+
+	assertStrings(t, option, "new item")
+}
+
+func TestAddTodo(t *testing.T) {
+	input := "new item\n"
+	reader := bufio.NewReader(strings.NewReader(input))
+	option, _ := readItem(reader)
+
+	assertStrings(t, option, "new item")
 }
 
 func assertStrings(t testing.TB, got, want string) {

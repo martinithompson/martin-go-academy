@@ -15,10 +15,11 @@ var todoItems = todos.Todos{}
 var reader = bufio.NewReader(os.Stdin)
 
 func menu(out io.Writer) {
-	fmt.Fprintf(out, "\t*** To-Do Options***\n\tPlease enter an option number to continue:\n\t\n\t1) Add a new to-do item\n\t2) View all todos\n\t3) Update a todo item\n\t4) Delete a todo item\n\t5) Exit\n")
+	fmt.Fprintf(out, "\n\t*** To-Do Options ***\n\tPlease enter an option number to continue:\n\t\n\t1) Add a new to-do item\n\t2) View all to-dos\n\t3) Update a to-do item\n\t4) Delete a to-do item\n\t5) Exit\n")
 }
 
 func readOption(in *bufio.Reader, max int) (int, error) {
+	fmt.Print("\n\t> ")
 	text, _ := in.ReadString('\n')
 	text = strings.TrimSpace(text)
 	i, err := strconv.Atoi(text)
@@ -43,15 +44,13 @@ func readItem(in *bufio.Reader) (string, error) {
 func handleOption(option int) {
 	switch option {
 	case 1:
-		fmt.Println("Add a todo")
 		addTodo(os.Stdin)
 	case 2:
-		viewTodos()
+		viewTodos(os.Stdin)
 	case 3:
-		fmt.Println("Update a todo")
-		updateTodo()
+		updateTodo(os.Stdin)
 	case 4:
-		fmt.Println("Delete a todo")
+		fmt.Println("Delete a to-do")
 		deleteTodo()
 	default:
 		fmt.Println("Goodbye")
@@ -59,33 +58,36 @@ func handleOption(option int) {
 }
 
 func addTodo(out io.Writer) {
-	fmt.Fprintln(out, "Enter the task name: ")
+	fmt.Fprintln(out, "\t*** Add a to-do ***")
+	fmt.Fprint(out, "\tEnter the new to-do item name: ")
 	item, _ := readItem(reader)
 	todoItems.AddTaskItems(item)
 }
 
-func viewTodos() {
+func viewTodos(out io.Writer) {
 	if len(todoItems.Items) > 0 {
-		fmt.Println("Your todo list:")
+		fmt.Fprintf(out, "\t*** Your to-do list ***\n\n")
 		todoItems.PrintDescriptions(os.Stdout)
 	} else {
-		fmt.Println("Your todo list is empty :-)")
+		fmt.Println("\tYour to-do list is empty :-)")
 	}
 }
 
-func updateTodo() {
+func updateTodo(out io.Writer) {
 	if len(todoItems.Items) > 0 {
-		fmt.Println("Enter the number of the item to update:")
+		fmt.Fprintln(out, "\t*** Update a to-do ***")
+		fmt.Fprintf(out, "\tEnter the number of the item to update:\n")
 		todoItems.PrintDescriptions(os.Stdout)
 
 		item, _ := readOption(reader, len(todoItems.Items))
 
-		fmt.Println("1) Update item name")
-		fmt.Println("2) Toggle completed status")
+		fmt.Fprintln(out, "\t1) Update item name")
+		fmt.Fprintln(out, "\t2) Toggle completed status")
 
 		updateOption, _ := readOption(reader, 2)
 
 		if updateOption == 1 {
+			fmt.Fprint(out, "\tEnter the updated to-do item name: ")
 			updatedItem, _ := readItem(reader)
 			todoItems.Items[item-1].Item = updatedItem
 		} else {
@@ -107,10 +109,10 @@ func deleteTodo() {
 
 func main() {
 
-	menu(os.Stdout)
 	var option int
 	var err error
 	for option != 5 {
+		menu(os.Stdout)
 		for {
 			option, err = readOption(reader, 5)
 			if err != nil {
@@ -120,7 +122,7 @@ func main() {
 			}
 		}
 
-		fmt.Printf("You selected option: %d\n", option)
+		fmt.Printf("\tYou selected option: %d\n\n", option)
 		handleOption(option)
 	}
 }

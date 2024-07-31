@@ -40,7 +40,7 @@ func (t *Todos) AddTodoItems(items ...Todo) {
 
 func (t Todos) PrintDescriptions(out io.Writer) {
 	for i, todo := range t.Items {
-		fmt.Fprintf(out, "%d> %s\n", i+1, todo.Description())
+		fmt.Fprintf(out, "\t%d> %s\n", i+1, todo.Description())
 	}
 }
 

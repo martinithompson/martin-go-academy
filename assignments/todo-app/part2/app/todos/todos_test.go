@@ -2,7 +2,7 @@ package todos
 
 import (
 	"bytes"
-	"reflect"
+	"slices"
 	"testing"
 	"testing/fstest"
 )
@@ -24,7 +24,7 @@ func TestTodos(t *testing.T) {
 		buffer := &bytes.Buffer{}
 		todos.PrintDescriptions(buffer)
 		got := buffer.String()
-		want := "Item: \"Wash the car\", Completed: no\nItem: \"Book holiday\", Completed: no\n"
+		want := "\t1> Item: \"Wash the car\", Completed: no\n\t2> Item: \"Book holiday\", Completed: no\n"
 		assertStrings(t, got, want)
 	})
 	t.Run("todos output json", func(t *testing.T) {
@@ -39,6 +39,24 @@ func TestTodos(t *testing.T) {
 
 		want := "[{\"Item\":\"Wash the car\",\"Completed\":false},{\"Item\":\"Book holiday\",\"Completed\":false}]"
 		assertStrings(t, buffer.String(), want)
+	})
+	t.Run("todos add todo", func(t *testing.T) {
+		gotTodos := Todos{}
+		gotTodos.AddTodoItems(washCar, bookHol)
+
+		assertTodos(t, gotTodos, todos)
+	})
+	t.Run("todos add todo as task string", func(t *testing.T) {
+		gotTodos := Todos{}
+		gotTodos.AddTaskItems("Wash the car", "Book holiday")
+
+		assertTodos(t, gotTodos, todos)
+	})
+	t.Run("todos delete", func(t *testing.T) {
+		gotTodos := Todos{Items: []Todo{washCar}}
+		gotTodos.DeleteTodoItem(1)
+
+		assertTodos(t, gotTodos, Todos{})
 	})
 }
 
@@ -82,7 +100,7 @@ func assertStrings(t testing.TB, got, want string) {
 
 func assertTodos(t *testing.T, got, want Todos) {
 	t.Helper()
-	if !reflect.DeepEqual(got, want) {
+	if !slices.Equal(got.Items, want.Items) {
 		t.Errorf("got %+v, want %+v", got, want)
 	}
 }

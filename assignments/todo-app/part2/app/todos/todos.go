@@ -83,6 +83,5 @@ func (ts *Todos) Load(fileSystem fs.FS, fileName string) {
 	if jsonErr != nil {
 		fmt.Println("Error unmarshalling JSON:", jsonErr)
 	}
-	fmt.Println(loadedTodos)
 	ts.AddTodoItems(loadedTodos...)
 }

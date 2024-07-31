@@ -18,8 +18,8 @@ func menu(out io.Writer) {
 	fmt.Fprintf(out, "\n\t*** To-Do Options ***\n\tPlease enter an option number to continue:\n\t\n\t1) Add a new to-do item\n\t2) View all to-dos\n\t3) Update a to-do item\n\t4) Delete a to-do item\n\t5) Exit\n")
 }
 
-func readOption(in *bufio.Reader, max int) (int, error) {
-	fmt.Print("\n\t> ")
+func readOption(in *bufio.Reader, out io.Writer, max int) (int, error) {
+	fmt.Fprint(out, "\n\t> ")
 	text, _ := in.ReadString('\n')
 	text = strings.TrimSpace(text)
 	i, err := strconv.Atoi(text)
@@ -78,12 +78,12 @@ func updateTodo(out io.Writer) {
 		fmt.Fprintf(out, "\tEnter the number of the item to update:\n")
 		todoItems.PrintDescriptions(os.Stdout)
 
-		item, _ := readOption(reader, len(todoItems.Items))
+		item, _ := readOption(reader, os.Stdout, len(todoItems.Items))
 
 		fmt.Fprintln(out, "\t1) Update item name")
 		fmt.Fprintln(out, "\t2) Toggle completed status")
 
-		updateOption, _ := readOption(reader, 2)
+		updateOption, _ := readOption(reader, os.Stdout, 2)
 
 		if updateOption == 1 {
 			fmt.Fprint(out, "\tEnter the updated to-do item name: ")
@@ -104,7 +104,7 @@ func deleteTodo(out io.Writer) {
 		fmt.Fprintf(out, "\tEnter the number of the item to delete:\n")
 		todoItems.PrintDescriptions(os.Stdout)
 
-		item, _ := readOption(reader, len(todoItems.Items))
+		item, _ := readOption(reader, os.Stdout, len(todoItems.Items))
 		todoItems.DeleteTodoItem(item)
 	} else {
 		fmt.Println("Your todo list is empty :-)")
@@ -112,13 +112,12 @@ func deleteTodo(out io.Writer) {
 }
 
 func main() {
-
 	var option int
 	var err error
 	for option != 5 {
 		menu(os.Stdout)
 		for {
-			option, err = readOption(reader, 5)
+			option, err = readOption(reader, os.Stdout, 5)
 			if err != nil {
 				fmt.Println("Invalid option, please enter 1-5:")
 			} else {

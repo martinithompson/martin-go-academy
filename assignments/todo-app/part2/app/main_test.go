@@ -11,13 +11,14 @@ func TestMenu(t *testing.T) {
 	t.Run("open menu", func(t *testing.T) {
 		buffer := &bytes.Buffer{}
 		menu(buffer)
-		want := `	*** To-Do Options***
+		want := `
+	*** To-Do Options ***
 	Please enter an option number to continue:
 	
 	1) Add a new to-do item
-	2) View all todos
-	3) Update a todo item
-	4) Delete a todo item
+	2) View all to-dos
+	3) Update a to-do item
+	4) Delete a to-do item
 	5) Exit
 `
 		assertStrings(t, buffer.String(), want)
@@ -45,7 +46,8 @@ func TestReadOption(t *testing.T) {
 	t.Run("valid integer", func(t *testing.T) {
 		input := "4\n"
 		reader := bufio.NewReader(strings.NewReader(input))
-		option, err := readOption(reader, 6)
+		buffer := &bytes.Buffer{}
+		option, err := readOption(reader, buffer, 6)
 
 		assertNoError(t, err)
 		assertOption(t, option, 4)
@@ -53,7 +55,8 @@ func TestReadOption(t *testing.T) {
 	t.Run("invalid integer", func(t *testing.T) {
 		input := "7\n"
 		reader := bufio.NewReader(strings.NewReader(input))
-		option, err := readOption(reader, 4)
+		buffer := &bytes.Buffer{}
+		option, err := readOption(reader, buffer, 4)
 
 		assertError(t, err)
 		assertOption(t, option, 0)
@@ -61,7 +64,8 @@ func TestReadOption(t *testing.T) {
 	t.Run("invalid string", func(t *testing.T) {
 		input := "abc\n"
 		reader := bufio.NewReader(strings.NewReader(input))
-		option, err := readOption(reader, 4)
+		buffer := &bytes.Buffer{}
+		option, err := readOption(reader, buffer, 4)
 
 		assertError(t, err)
 		assertOption(t, option, 0)

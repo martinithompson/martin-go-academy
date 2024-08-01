@@ -47,6 +47,22 @@ func (ts *Todos) DeleteTodoItem(index int) error {
 	return nil
 }
 
+func (ts *Todos) ToggleTodoCompleted(index int) error {
+	if len(ts.Items) < index {
+		return errors.New("index out of range")
+	}
+	ts.Items[index-1].Completed = !ts.Items[index-1].Completed
+	return nil
+}
+
+func (ts *Todos) UpdateTodoItem(index int, updated string) error {
+	if len(ts.Items) < index {
+		return errors.New("index out of range")
+	}
+	ts.Items[index-1].Item = updated
+	return nil
+}
+
 func (t Todos) PrintDescriptions(out io.Writer) {
 	for i, todo := range t.Items {
 		fmt.Fprintf(out, "\t%d> %s\n", i+1, todo.Description())

@@ -78,7 +78,7 @@ func updateTodo(out io.Writer) {
 		fmt.Fprintf(out, "\tEnter the number of the item to update:\n")
 		todoItems.PrintDescriptions(os.Stdout)
 
-		item, _ := readOption(reader, os.Stdout, len(todoItems.Items))
+		index, _ := readOption(reader, os.Stdout, len(todoItems.Items))
 
 		fmt.Fprintln(out, "\t1) Update item name")
 		fmt.Fprintln(out, "\t2) Toggle completed status")
@@ -88,9 +88,10 @@ func updateTodo(out io.Writer) {
 		if updateOption == 1 {
 			fmt.Fprint(out, "\tEnter the updated to-do item name: ")
 			updatedItem, _ := readItem(reader)
-			todoItems.Items[item-1].Item = updatedItem
+			// todoItems.Items[item-1].Item = updatedItem
+			todoItems.UpdateTodoItem(index, updatedItem)
 		} else {
-			todoItems.Items[item-1].Completed = !todoItems.Items[item-1].Completed
+			todoItems.ToggleTodoCompleted(index)
 		}
 
 	} else {

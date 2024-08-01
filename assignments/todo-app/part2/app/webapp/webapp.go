@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 	"todo-app/project/todos"
 )
 
@@ -15,44 +17,89 @@ func errorCheck(err error) {
 	}
 }
 
-func write(writer http.ResponseWriter, msg string) {
-	_, err := writer.Write([]byte(msg))
-	errorCheck(err)
+type TodoData struct {
+	Todo  todos.Todo
+	Index int
 }
 
-func sayHelloHandler(writer http.ResponseWriter, request *http.Request) {
-	write(writer, "Hello world")
-}
-
-func viewTodosHandler(writer http.ResponseWriter, request *http.Request) {
+func listPageHandler(writer http.ResponseWriter, request *http.Request) {
 	tmpl, _ := template.ParseFiles("list.html")
 	tmpl.Execute(writer, todoList.Items)
 }
 
-func addTodoHandler(writer http.ResponseWriter, request *http.Request) {
+func addPageHandler(writer http.ResponseWriter, request *http.Request) {
 	tmpl, err := template.ParseFiles("add.html")
 	errorCheck(err)
 	err = tmpl.Execute(writer, nil)
 	errorCheck(err)
 }
 
-func createTodoHandler(writer http.ResponseWriter, request *http.Request) {
+func addTodoHandler(writer http.ResponseWriter, request *http.Request) {
 	item := request.FormValue("item")
 	todoList.AddTaskItems(item)
 	http.Redirect(writer, request, "/list", http.StatusFound)
 }
 
-func toggleTodoHandler(writer http.ResponseWriter, request *http.Request) {
-	write(writer, request.URL.Path)
+func editPageHandler(writer http.ResponseWriter, request *http.Request) {
+	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
+	errorCheck(err)
+	tmpl, err := template.ParseFiles("edit.html")
+	errorCheck(err)
+	data := TodoData{Todo: todoList.Items[index], Index: index}
+	err = tmpl.Execute(writer, data)
+	errorCheck(err)
+}
+
+func editTodoHandler(writer http.ResponseWriter, request *http.Request) {
+	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
+	errorCheck(err)
+	item := request.FormValue("item")
+	completed := request.FormValue("completed")
+	if todoList.Items[index].Item != item {
+		todoList.UpdateTodoItem(index+1, item)
+	}
+	if todoList.Items[index].Completed != checkboxValueToBool(completed) {
+		todoList.ToggleTodoCompleted(index + 1)
+	}
+
+	http.Redirect(writer, request, "/list", http.StatusFound)
+}
+
+func deletePageHandler(writer http.ResponseWriter, request *http.Request) {
+	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
+	errorCheck(err)
+	tmpl, err := template.ParseFiles("delete.html")
+	errorCheck(err)
+	data := TodoData{Todo: todoList.Items[index], Index: index}
+	err = tmpl.Execute(writer, data)
+	errorCheck(err)
+}
+
+func deleteTodoHandler(writer http.ResponseWriter, request *http.Request) {
+	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
+	errorCheck(err)
+	todoList.DeleteTodoItem(index + 1)
+
+	http.Redirect(writer, request, "/list", http.StatusFound)
+}
+
+func getIdFromPath(path string) string {
+	pathParams := strings.Split(path, "/")
+	return pathParams[len(pathParams)-1]
+}
+
+func checkboxValueToBool(value string) bool {
+	return value == "on"
 }
 
 func main() {
-	// todoList.AddTaskItems("hello world")
-	http.HandleFunc("/hello", sayHelloHandler)
-	http.HandleFunc("/list", viewTodosHandler)
-	http.HandleFunc("/add", addTodoHandler)
-	http.HandleFunc("/create", createTodoHandler)
-	http.HandleFunc("/toggle/", toggleTodoHandler)
+	http.HandleFunc("/list", listPageHandler)
+	http.HandleFunc("/add", addPageHandler)
+	http.HandleFunc("/add-todo", addTodoHandler)
+	http.HandleFunc("/edit/", editPageHandler)
+	http.HandleFunc("/edit-todo/", editTodoHandler)
+	http.HandleFunc("/delete/", deletePageHandler)
+	http.HandleFunc("/delete-todo/", deleteTodoHandler)
 
 	err := http.ListenAndServe("localhost:8080", nil)
 	log.Fatal(err)

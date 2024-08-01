@@ -1,0 +1,9 @@
+<h1>Edit a todo</h1>
+<form action="/edit-todo/{{.Index}}" method="post">
+    <div>
+        Item: <input type="text" name="item" value="{{.Todo.Item}}"><br />
+        Completed: <input type="checkbox" name="completed" {{if .Todo.Completed}}checked{{end}}><br />
+        <button type="submit">Update</button>
+        <a href="/list">Cancel</a>
+    </div>
+</form>

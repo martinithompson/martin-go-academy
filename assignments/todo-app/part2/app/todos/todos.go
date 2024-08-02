@@ -10,8 +10,8 @@ import (
 )
 
 type Todo struct {
-	Item      string
-	Completed bool
+	Item      string `json:"item"`
+	Completed bool   `json:"completed"`
 }
 
 func formatCompleted(c bool) string {

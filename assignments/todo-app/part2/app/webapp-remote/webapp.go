@@ -15,15 +15,12 @@ import (
 
 var todoList = todos.Todos{}
 
+const url = "http://localhost:5000/todos"
+
 func errorCheck(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-type TodoData struct {
-	Item      string `json:"item"`
-	Completed bool   `json:"completed"`
 }
 
 type TodosData struct {
@@ -33,8 +30,6 @@ type TodosData struct {
 
 func listPageHandler(writer http.ResponseWriter, request *http.Request) {
 	tmpl, _ := template.ParseFiles("list.html")
-
-	url := "http://localhost:5000/todos"
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -53,11 +48,14 @@ func listPageHandler(writer http.ResponseWriter, request *http.Request) {
 
 	fmt.Println(string(body))
 
-	var todoData []TodoData
+	var todoData []todos.Todo
 	err = json.Unmarshal(body, &todoData)
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
+
+	// save to global state
+	todoList.Items = todoData
 
 	tmpl.Execute(writer, todoData)
 }
@@ -71,9 +69,8 @@ func addPageHandler(writer http.ResponseWriter, request *http.Request) {
 
 func addTodoHandler(writer http.ResponseWriter, request *http.Request) {
 	item := request.FormValue("item")
-	// todoList.AddTaskItems(item)
 
-	todo := TodoData{
+	todo := todos.Todo{
 		Item:      item,
 		Completed: false,
 	}
@@ -82,8 +79,6 @@ func addTodoHandler(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Fatalf("Error marshalling JSON: %v", err)
 	}
-
-	url := "http://localhost:5000/todos"
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -126,6 +121,7 @@ func editTodoHandler(writer http.ResponseWriter, request *http.Request) {
 func deletePageHandler(writer http.ResponseWriter, request *http.Request) {
 	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
 	errorCheck(err)
+	fmt.Println("Index: ", todoList.Items[index])
 	tmpl, err := template.ParseFiles("delete.html")
 	errorCheck(err)
 	data := TodosData{Todo: todoList.Items[index], Index: index}
@@ -136,7 +132,27 @@ func deletePageHandler(writer http.ResponseWriter, request *http.Request) {
 func deleteTodoHandler(writer http.ResponseWriter, request *http.Request) {
 	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
 	errorCheck(err)
-	todoList.DeleteTodoItem(index + 1)
+
+	deleteUrl := fmt.Sprintf("%s/%d", url, index)
+
+	fmt.Println("***deleteURL***", deleteUrl)
+
+	req, err := http.NewRequest(http.MethodDelete, deleteUrl, nil)
+	if err != nil {
+		log.Fatalf("Error creating DELETE request: %v", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Error sending DELETE request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		log.Fatalf("Error: received status code %d", resp.StatusCode)
+	}
+
+	fmt.Println("Resource deleted successfully")
 
 	http.Redirect(writer, request, "/list", http.StatusFound)
 }

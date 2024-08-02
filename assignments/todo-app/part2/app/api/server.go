@@ -33,7 +33,7 @@ func NewTodoServer(store TodoStore) *TodoServer {
 
 func (t *TodoServer) postTodo(w http.ResponseWriter, todo todos.Todo) {
 	t.store.AddTodo(todo)
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (t *TodoServer) getTodos(w http.ResponseWriter) {

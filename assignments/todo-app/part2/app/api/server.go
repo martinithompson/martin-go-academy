@@ -24,16 +24,12 @@ type TodoServer struct {
 }
 
 func NewTodoServer(store TodoStore) *TodoServer {
-	t := new(TodoServer)
-
-	t.store = store
-
+	t := &TodoServer{store: store}
 	router := http.NewServeMux()
-	router.Handle("/todos", http.HandlerFunc(t.todosHandler))
-	router.Handle("/todos/", http.HandlerFunc(t.todoHandler))
+	router.HandleFunc("/todos", t.todosHandler)
+	router.HandleFunc("/todos/", t.todoHandler)
 
 	t.Handler = router
-
 	return t
 }
 
@@ -61,8 +57,7 @@ func (t *TodoServer) todosHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		var todo todos.Todo
-		err := json.NewDecoder(r.Body).Decode(&todo)
-		if err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
@@ -71,27 +66,31 @@ func (t *TodoServer) todosHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		log.Println("Get todos")
 		t.getTodos(w)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
 func (t *TodoServer) todoHandler(w http.ResponseWriter, r *http.Request) {
-	todoIndex := strings.TrimPrefix(r.URL.Path, "/todos/")
-
-	todoInt, _ := strconv.Atoi(todoIndex)
-	todoInt++
+	todoIndex, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/todos/"))
+	if err != nil {
+		http.Error(w, "Invalid todo index", http.StatusBadRequest)
+		return
+	}
 
 	switch r.Method {
 	case http.MethodPatch:
 		var todo todos.Todo
-		err := json.NewDecoder(r.Body).Decode(&todo)
-		if err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		log.Printf("Edit todo %d: %v", todoInt, todo)
-		t.editTodo(w, todoInt, todo)
+		log.Printf("Edit todo %d: %v", todoIndex, todo)
+		t.editTodo(w, todoIndex, todo)
 	case http.MethodDelete:
-		log.Printf("Delete todo: %d", todoInt)
-		t.deleteTodo(w, todoInt)
+		log.Printf("Delete todo: %d", todoIndex)
+		t.deleteTodo(w, todoIndex)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }

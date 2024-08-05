@@ -15,7 +15,10 @@ import (
 
 var todoList = todos.Todos{}
 
-const url = "http://localhost:5000/todos"
+const (
+	url  = "http://localhost:5000/todos"
+	port = ":8080"
+)
 
 func errorCheck(err error) {
 	if err != nil {
@@ -28,25 +31,69 @@ type TodosData struct {
 	Index int
 }
 
-func listPageHandler(writer http.ResponseWriter, request *http.Request) {
-	tmpl, _ := template.ParseFiles("list.html")
+func validateStatusCode(resp *http.Response, expectedStatusCode int) {
+	if resp.StatusCode != expectedStatusCode {
+		log.Fatalf("Error: received status code %d", resp.StatusCode)
+	}
+}
 
+func renderTemplate(writer http.ResponseWriter, templateName string, data interface{}) {
+	tmpl, err := template.ParseFiles(templateName)
+	errorCheck(err)
+	err = tmpl.Execute(writer, data)
+	errorCheck(err)
+}
+
+func navigateToListPage(writer http.ResponseWriter, request *http.Request) {
+	http.Redirect(writer, request, "/list", http.StatusFound)
+}
+
+func getTodoIndex(path string) int {
+	index, err := strconv.Atoi(getIdFromPath(path))
+	errorCheck(err)
+	return index
+}
+
+func getTodoFromForm(request *http.Request) todos.Todo {
+	item := request.FormValue("item")
+	completed := request.FormValue("completed")
+
+	return todos.Todo{
+		Item:      item,
+		Completed: checkboxValueToBool(completed),
+	}
+}
+
+func convertTodoToJSON(todo todos.Todo) []byte {
+	jsonData, err := json.Marshal(todo)
+	if err != nil {
+		log.Fatalf("Error marshalling JSON: %v", err)
+	}
+	return jsonData
+}
+
+func getIdFromPath(path string) string {
+	pathParams := strings.Split(path, "/")
+	return pathParams[len(pathParams)-1]
+}
+
+func checkboxValueToBool(value string) bool {
+	return value == "on"
+}
+
+func listPageHandler(writer http.ResponseWriter, request *http.Request) {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalf("Error making GET request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Error: received status code %d", resp.StatusCode)
-	}
+	validateStatusCode(resp, http.StatusOK)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("Error reading response body: %v", err)
 	}
-
-	fmt.Println(string(body))
 
 	var todoData []todos.Todo
 	err = json.Unmarshal(body, &todoData)
@@ -56,8 +103,7 @@ func listPageHandler(writer http.ResponseWriter, request *http.Request) {
 
 	// save to global state
 	todoList.Items = todoData
-
-	tmpl.Execute(writer, todoData)
+	renderTemplate(writer, "list.html", todoData)
 }
 
 func addPageHandler(writer http.ResponseWriter, request *http.Request) {
@@ -68,17 +114,8 @@ func addPageHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func addTodoHandler(writer http.ResponseWriter, request *http.Request) {
-	item := request.FormValue("item")
-
-	todo := todos.Todo{
-		Item:      item,
-		Completed: false,
-	}
-
-	jsonData, err := json.Marshal(todo)
-	if err != nil {
-		log.Fatalf("Error marshalling JSON: %v", err)
-	}
+	todo := getTodoFromForm(request)
+	jsonData := convertTodoToJSON(todo)
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -86,40 +123,21 @@ func addTodoHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
-		log.Fatalf("Error: received status code %d", resp.StatusCode)
-	}
-
-	http.Redirect(writer, request, "/list", http.StatusFound)
+	validateStatusCode(resp, http.StatusCreated)
+	navigateToListPage(writer, request)
 }
 
 func editPageHandler(writer http.ResponseWriter, request *http.Request) {
 	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
 	errorCheck(err)
-	tmpl, err := template.ParseFiles("edit.html")
-	errorCheck(err)
 	data := TodosData{Todo: todoList.Items[index], Index: index}
-	err = tmpl.Execute(writer, data)
-	errorCheck(err)
+	renderTemplate(writer, "edit.html", data)
 }
 
 func editTodoHandler(writer http.ResponseWriter, request *http.Request) {
-	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
-	errorCheck(err)
-	item := request.FormValue("item")
-	completed := request.FormValue("completed")
-
-	todo := todos.Todo{
-		Item:      item,
-		Completed: completed == "on",
-	}
-
-	fmt.Println("todo: ", todo)
-
-	jsonData, err := json.Marshal(todo)
-	if err != nil {
-		log.Fatalf("Error marshalling JSON: %v", err)
-	}
+	index := getTodoIndex(request.URL.Path)
+	todo := getTodoFromForm(request)
+	jsonData := convertTodoToJSON(todo)
 
 	patchUrl := fmt.Sprintf("%s/%d", url, index)
 
@@ -134,33 +152,19 @@ func editTodoHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
-		log.Fatalf("Error: received status code %d", resp.StatusCode)
-	}
-
-	fmt.Println("Resource updated successfully")
-
-	http.Redirect(writer, request, "/list", http.StatusFound)
+	validateStatusCode(resp, http.StatusCreated)
+	navigateToListPage(writer, request)
 }
 
 func deletePageHandler(writer http.ResponseWriter, request *http.Request) {
-	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
-	errorCheck(err)
-	fmt.Println("Index: ", todoList.Items[index])
-	tmpl, err := template.ParseFiles("delete.html")
-	errorCheck(err)
+	index := getTodoIndex(request.URL.Path)
 	data := TodosData{Todo: todoList.Items[index], Index: index}
-	err = tmpl.Execute(writer, data)
-	errorCheck(err)
+	renderTemplate(writer, "delete.html", data)
 }
 
 func deleteTodoHandler(writer http.ResponseWriter, request *http.Request) {
-	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
-	errorCheck(err)
-
+	index := getTodoIndex(request.URL.Path)
 	deleteUrl := fmt.Sprintf("%s/%d", url, index)
-
-	fmt.Println("***deleteURL***", deleteUrl)
 
 	req, err := http.NewRequest(http.MethodDelete, deleteUrl, nil)
 	if err != nil {
@@ -173,25 +177,9 @@ func deleteTodoHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusNoContent {
-		log.Fatalf("Error: received status code %d", resp.StatusCode)
-	}
-
-	fmt.Println("Resource deleted successfully")
-
-	http.Redirect(writer, request, "/list", http.StatusFound)
+	validateStatusCode(resp, http.StatusNoContent)
+	navigateToListPage(writer, request)
 }
-
-func getIdFromPath(path string) string {
-	pathParams := strings.Split(path, "/")
-	return pathParams[len(pathParams)-1]
-}
-
-func checkboxValueToBool(value string) bool {
-	return value == "on"
-}
-
-const port = ":8080"
 
 func main() {
 	http.HandleFunc("/list", listPageHandler)

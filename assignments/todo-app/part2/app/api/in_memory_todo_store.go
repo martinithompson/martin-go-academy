@@ -17,21 +17,19 @@ func (i *InMemoryTodoStore) AddTodo(todo todos.Todo) {
 }
 
 func (i *InMemoryTodoStore) DeleteTodo(index int) {
-	if index < 0 || index >= len(i.store.Items) {
-		return
+	if validateIndex(index, len(i.store.Items)) {
+		i.store.DeleteTodoItem(index)
 	}
-	i.store.DeleteTodoItem(index)
 }
 
 func (i *InMemoryTodoStore) EditTodo(index int, updated todos.Todo) {
-	if index < 0 || index > len(i.store.Items) {
-		return
-	}
-	if i.store.Items[index-1].Item != updated.Item {
-		i.store.UpdateTodoItem(index, updated.Item)
-	}
-	if i.store.Items[index-1].Completed != updated.Completed {
-		i.store.ToggleTodoCompleted(index)
+	if validateIndex(index, len(i.store.Items)) {
+		if i.store.Items[index-1].Item != updated.Item {
+			i.store.UpdateTodoItem(index, updated.Item)
+		}
+		if i.store.Items[index-1].Completed != updated.Completed {
+			i.store.ToggleTodoCompleted(index)
+		}
 	}
 }
 
@@ -41,4 +39,8 @@ func (i *InMemoryTodoStore) ToggleTodoCompleted(index int) {
 
 func (i *InMemoryTodoStore) GetTodos() []todos.Todo {
 	return i.store.Items
+}
+
+func validateIndex(index int, length int) bool {
+	return index >= 1 && index <= length
 }

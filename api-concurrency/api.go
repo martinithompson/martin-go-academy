@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,38 +9,21 @@ import (
 	"strconv"
 )
 
-type CounterStore struct {
-	counters map[string]int
+type Todo struct {
+	Name      string `json:"name"`
+	Completed bool   `json:"completed"`
 }
 
-func (cs CounterStore) get(w http.ResponseWriter, req *http.Request) {
-	log.Printf("get %v", req)
-	name := req.URL.Query().Get("name")
-	if val, ok := cs.counters[name]; ok {
-		fmt.Fprintf(w, "%s: %d\n", name, val)
-	} else {
-		fmt.Fprintf(w, "%s not found\n", name)
-	}
-}
-
-func (cs CounterStore) set(w http.ResponseWriter, req *http.Request) {
-	log.Printf("set %v", req)
-	name := req.URL.Query().Get("name")
-	val := req.URL.Query().Get("val")
-	intval, err := strconv.Atoi(val)
-	if err != nil {
-		fmt.Fprintf(w, "%s\n", err)
-	} else {
-		cs.counters[name] = intval
-		fmt.Fprintf(w, "ok\n")
-	}
+type TodoStore struct {
+	todos []Todo
 }
 
 func main() {
-	store := CounterStore{counters: map[string]int{"i": 0, "j": 0}}
-	http.HandleFunc("/get", store.get)
-	http.HandleFunc("/set", store.set)
-	http.HandleFunc("/inc", store.inc)
+	server := Server{}
+	server.cmds = startTodoManager()
+
+	http.HandleFunc("/inc", server.inc)
+	http.HandleFunc("/get", server.getTodos)
 
 	portnum := 8000
 	if len(os.Args) > 1 {
@@ -53,22 +37,17 @@ type CommandType int
 
 const (
 	GetCommand CommandType = iota
-	SetCommand
-	IncCommand
+	AddCommand
 )
 
 type Command struct {
 	ty        CommandType
 	name      string
-	val       int
-	replyChan chan int
+	replyChan chan []Todo
 }
 
-func startCounterManager(initvals map[string]int) chan<- Command {
-	counters := make(map[string]int)
-	for k, v := range initvals {
-		counters[k] = v
-	}
+func startTodoManager() chan<- Command {
+	todos := TodoStore{}
 
 	cmds := make(chan Command)
 
@@ -76,21 +55,12 @@ func startCounterManager(initvals map[string]int) chan<- Command {
 		for cmd := range cmds {
 			switch cmd.ty {
 			case GetCommand:
-				if val, ok := counters[cmd.name]; ok {
-					cmd.replyChan <- val
-				} else {
-					cmd.replyChan <- -1
-				}
-			case SetCommand:
-				counters[cmd.name] = cmd.val
-				cmd.replyChan <- cmd.val
-			case IncCommand:
-				if _, ok := counters[cmd.name]; ok {
-					counters[cmd.name]++
-					cmd.replyChan <- counters[cmd.name]
-				} else {
-					cmd.replyChan <- -1
-				}
+				fmt.Println("GetCommand")
+				cmd.replyChan <- todos.todos
+			case AddCommand:
+				fmt.Println("AddCommand")
+				todos.todos = append(todos.todos, Todo{Name: cmd.name, Completed: false})
+				cmd.replyChan <- todos.todos
 			default:
 				log.Fatal("unknown command type", cmd.ty)
 			}
@@ -103,27 +73,24 @@ type Server struct {
 	cmds chan<- Command
 }
 
-// func (cs CounterStore) inc(w http.ResponseWriter, req *http.Request) {
-// 	log.Printf("inc %v", req)
-// 	name := req.URL.Query().Get("name")
-// 	if _, ok := cs.counters[name]; ok {
-// 		cs.counters[name]++
-// 		fmt.Fprintf(w, "ok\n")
-// 	} else {
-// 		fmt.Fprintf(w, "%s not found\n", name)
-// 	}
-// }
-
 func (s *Server) inc(w http.ResponseWriter, req *http.Request) {
 	log.Printf("inc %v", req)
 	name := req.URL.Query().Get("name")
-	replyChan := make(chan int)
-	s.cmds <- Command{ty: IncCommand, name: name, replyChan: replyChan}
+	replyChan := make(chan []Todo)
+	s.cmds <- Command{ty: AddCommand, name: name, replyChan: replyChan}
 
 	reply := <-replyChan
-	if reply >= 0 {
+	if reply != nil {
 		fmt.Fprintf(w, "ok\n")
-	} else {
-		fmt.Fprintf(w, "%s not found\n", name)
 	}
+}
+
+func (s *Server) getTodos(w http.ResponseWriter, req *http.Request) {
+	log.Printf("get %v", req)
+	replyChan := make(chan []Todo)
+	s.cmds <- Command{ty: GetCommand, replyChan: replyChan}
+
+	todos := <-replyChan
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(todos)
 }

@@ -17,11 +17,22 @@ func (i *InMemoryTodoStore) AddTodo(todo todos.Todo) {
 }
 
 func (i *InMemoryTodoStore) DeleteTodo(index int) {
+	if index < 0 || index >= len(i.store.Items) {
+		return
+	}
 	i.store.DeleteTodoItem(index)
 }
 
 func (i *InMemoryTodoStore) EditTodo(index int, updated todos.Todo) {
-	i.store.UpdateTodoItem(index, updated.Item)
+	if index < 0 || index > len(i.store.Items) {
+		return
+	}
+	if i.store.Items[index-1].Item != updated.Item {
+		i.store.UpdateTodoItem(index, updated.Item)
+	}
+	if i.store.Items[index-1].Completed != updated.Completed {
+		i.store.ToggleTodoCompleted(index)
+	}
 }
 
 func (i *InMemoryTodoStore) ToggleTodoCompleted(index int) {

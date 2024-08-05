@@ -6,7 +6,10 @@ import (
 	"net/http"
 )
 
+const port = ":5000"
+
 func main() {
 	server := NewTodoServer(NewInMemoryTodoStore())
-	log.Fatal(http.ListenAndServe(":5000", server))
+	log.Printf("Starting api on http://localhost%s", port)
+	log.Fatal(http.ListenAndServe(port, server))
 }

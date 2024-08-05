@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -65,8 +66,10 @@ func (t *TodoServer) todosHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
+		log.Printf("Create todo: %v", todo)
 		t.postTodo(w, todo)
 	case http.MethodGet:
+		log.Println("Get todos")
 		t.getTodos(w)
 	}
 }
@@ -85,8 +88,10 @@ func (t *TodoServer) todoHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
+		log.Printf("Edit todo %d: %v", todoInt, todo)
 		t.editTodo(w, todoInt, todo)
 	case http.MethodDelete:
+		log.Printf("Delete todo: %d", todoInt)
 		t.deleteTodo(w, todoInt)
 	}
 }

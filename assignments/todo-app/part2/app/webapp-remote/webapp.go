@@ -108,12 +108,37 @@ func editTodoHandler(writer http.ResponseWriter, request *http.Request) {
 	errorCheck(err)
 	item := request.FormValue("item")
 	completed := request.FormValue("completed")
-	if todoList.Items[index].Item != item {
-		todoList.UpdateTodoItem(index+1, item)
+
+	todo := todos.Todo{
+		Item:      item,
+		Completed: completed == "on",
 	}
-	if todoList.Items[index].Completed != checkboxValueToBool(completed) {
-		todoList.ToggleTodoCompleted(index + 1)
+
+	fmt.Println("todo: ", todo)
+
+	jsonData, err := json.Marshal(todo)
+	if err != nil {
+		log.Fatalf("Error marshalling JSON: %v", err)
 	}
+
+	patchUrl := fmt.Sprintf("%s/%d", url, index)
+
+	req, err := http.NewRequest(http.MethodPatch, patchUrl, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Fatalf("Error creating PATCH request: %v", err)
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Error sending PATCH request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		log.Fatalf("Error: received status code %d", resp.StatusCode)
+	}
+
+	fmt.Println("Resource updated successfully")
 
 	http.Redirect(writer, request, "/list", http.StatusFound)
 }
@@ -166,6 +191,8 @@ func checkboxValueToBool(value string) bool {
 	return value == "on"
 }
 
+const port = ":8080"
+
 func main() {
 	http.HandleFunc("/list", listPageHandler)
 	http.HandleFunc("/add", addPageHandler)
@@ -175,6 +202,7 @@ func main() {
 	http.HandleFunc("/delete/", deletePageHandler)
 	http.HandleFunc("/delete-todo/", deleteTodoHandler)
 
+	log.Printf("Starting webapp on http://localhost%s", port)
 	err := http.ListenAndServe("localhost:8080", nil)
 	log.Fatal(err)
 }

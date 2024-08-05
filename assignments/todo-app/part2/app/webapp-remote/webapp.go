@@ -8,27 +8,21 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"todo-app/project/todos"
 )
 
-var todoList = todos.Todos{}
+var localStore = todos.Todos{}
 
 const (
-	url  = "http://localhost:5000/todos"
-	port = ":8080"
+	apiBaseUrl = "http://localhost:8000/todos"
+	port       = ":8080"
 )
 
 func errorCheck(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-type TodosData struct {
-	Todo  todos.Todo
-	Index int
 }
 
 func validateStatusCode(resp *http.Response, expectedStatusCode int) {
@@ -48,20 +42,11 @@ func navigateToListPage(writer http.ResponseWriter, request *http.Request) {
 	http.Redirect(writer, request, "/list", http.StatusFound)
 }
 
-func getTodoIndex(path string) int {
-	index, err := strconv.Atoi(getIdFromPath(path))
-	errorCheck(err)
-	return index
-}
-
-func getTodoFromForm(request *http.Request) todos.Todo {
+func getTodoFromForm(request *http.Request) (string, bool) {
 	item := request.FormValue("item")
 	completed := request.FormValue("completed")
 
-	return todos.Todo{
-		Item:      item,
-		Completed: checkboxValueToBool(completed),
-	}
+	return item, checkboxValueToBool(completed)
 }
 
 func convertTodoToJSON(todo todos.Todo) []byte {
@@ -81,8 +66,17 @@ func checkboxValueToBool(value string) bool {
 	return value == "on"
 }
 
+func getTodoById(id string) todos.Todo {
+	for _, todo := range localStore.Items {
+		if todo.Id == id {
+			return todo
+		}
+	}
+	return todos.Todo{}
+}
+
 func listPageHandler(writer http.ResponseWriter, request *http.Request) {
-	resp, err := http.Get(url)
+	resp, err := http.Get(apiBaseUrl)
 	if err != nil {
 		log.Fatalf("Error making GET request: %v", err)
 	}
@@ -102,7 +96,7 @@ func listPageHandler(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// save to global state
-	todoList.Items = todoData
+	localStore.Items = todoData
 	renderTemplate(writer, "list.html", todoData)
 }
 
@@ -114,10 +108,11 @@ func addPageHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func addTodoHandler(writer http.ResponseWriter, request *http.Request) {
-	todo := getTodoFromForm(request)
-	jsonData := convertTodoToJSON(todo)
+	item, _ := getTodoFromForm(request)
+	newTodo := todos.Todo{Item: item, Completed: false}
+	jsonData := convertTodoToJSON(newTodo)
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(apiBaseUrl, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Fatalf("Error making POST request: %v", err)
 	}
@@ -128,18 +123,18 @@ func addTodoHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func editPageHandler(writer http.ResponseWriter, request *http.Request) {
-	index, err := strconv.Atoi(getIdFromPath(request.URL.Path))
-	errorCheck(err)
-	data := TodosData{Todo: todoList.Items[index], Index: index}
-	renderTemplate(writer, "edit.html", data)
+	id := getIdFromPath(request.URL.Path)
+	selectedTodo := getTodoById(id)
+	renderTemplate(writer, "edit.html", selectedTodo)
 }
 
 func editTodoHandler(writer http.ResponseWriter, request *http.Request) {
-	index := getTodoIndex(request.URL.Path)
-	todo := getTodoFromForm(request)
-	jsonData := convertTodoToJSON(todo)
+	id := getIdFromPath(request.URL.Path)
+	item, completed := getTodoFromForm(request)
+	updatedTodo := todos.Todo{Id: id, Item: item, Completed: completed}
+	jsonData := convertTodoToJSON(updatedTodo)
 
-	patchUrl := fmt.Sprintf("%s/%d", url, index)
+	patchUrl := fmt.Sprintf("%s/%s", apiBaseUrl, id)
 
 	req, err := http.NewRequest(http.MethodPatch, patchUrl, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -157,14 +152,14 @@ func editTodoHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func deletePageHandler(writer http.ResponseWriter, request *http.Request) {
-	index := getTodoIndex(request.URL.Path)
-	data := TodosData{Todo: todoList.Items[index], Index: index}
-	renderTemplate(writer, "delete.html", data)
+	id := getIdFromPath(request.URL.Path)
+	selectedTodo := getTodoById(id)
+	renderTemplate(writer, "delete.html", selectedTodo)
 }
 
 func deleteTodoHandler(writer http.ResponseWriter, request *http.Request) {
-	index := getTodoIndex(request.URL.Path)
-	deleteUrl := fmt.Sprintf("%s/%d", url, index)
+	id := getIdFromPath(request.URL.Path)
+	deleteUrl := fmt.Sprintf("%s/%s", apiBaseUrl, id)
 
 	req, err := http.NewRequest(http.MethodDelete, deleteUrl, nil)
 	if err != nil {

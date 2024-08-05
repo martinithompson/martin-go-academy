@@ -51,12 +51,12 @@
             </tr>
         </thead>
         <tbody>
-            {{range $index, $item := .}}
+            {{range $item := .}}
                 <tr>
                     <td>{{$item.Item}}</td>
                     <td>{{$item.Completed}}</td>
-                    <td><a href="/edit/{{$index}}">&#128221; edit</a></td>
-                    <td><a href="/delete/{{$index}}">&#128465; delete</a></td>
+                    <td><a href="/edit/{{$item.Id}}">&#128221; edit</a></td>
+                    <td><a href="/delete/{{$item.Id}}">&#128465; delete</a></td>
                 </tr>
             {{else}}
                 <tr>

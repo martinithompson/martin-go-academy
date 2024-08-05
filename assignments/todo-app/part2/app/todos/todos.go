@@ -7,9 +7,12 @@ import (
 	"io"
 	"io/fs"
 	"log"
+
+	"github.com/google/uuid"
 )
 
 type Todo struct {
+	Id        string `json:"id"`
 	Item      string `json:"item"`
 	Completed bool   `json:"completed"`
 }
@@ -31,7 +34,7 @@ type Todos struct {
 
 func (ts *Todos) AddTaskItems(items ...string) {
 	for _, item := range items {
-		ts.Items = append(ts.Items, Todo{Item: item})
+		ts.Items = append(ts.Items, Todo{Item: item, Id: uuid.New().String()})
 	}
 }
 
@@ -39,28 +42,25 @@ func (ts *Todos) AddTodoItems(items ...Todo) {
 	ts.Items = append(ts.Items, items...)
 }
 
-func (ts *Todos) DeleteTodoItem(index int) error {
-	if len(ts.Items) < index {
-		return errors.New("index out of range")
+func (ts *Todos) DeleteTodoItem(id string) error {
+	for i, todo := range ts.Items {
+		if todo.Id == id {
+			ts.Items = append(ts.Items[:i], ts.Items[i+1:]...)
+			return nil
+		}
 	}
-	ts.Items = append(ts.Items[:index-1], ts.Items[index:]...)
-	return nil
+	return errors.New("todo not found")
 }
 
-func (ts *Todos) ToggleTodoCompleted(index int) error {
-	if len(ts.Items) < index {
-		return errors.New("index out of range")
+func (ts *Todos) UpdateTodoItem(updated Todo) error {
+	for i, todo := range ts.Items {
+		if todo.Id == updated.Id {
+			ts.Items[i].Item = updated.Item
+			ts.Items[i].Completed = updated.Completed
+			return nil
+		}
 	}
-	ts.Items[index-1].Completed = !ts.Items[index-1].Completed
-	return nil
-}
-
-func (ts *Todos) UpdateTodoItem(index int, updated string) error {
-	if len(ts.Items) < index {
-		return errors.New("index out of range")
-	}
-	ts.Items[index-1].Item = updated
-	return nil
+	return errors.New("todo not found")
 }
 
 func (t Todos) PrintDescriptions(out io.Writer) {

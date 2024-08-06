@@ -1,0 +1,8 @@
+<h1>Delete a todo</h1>
+<form action="/delete-todo/{{.Id}}" method="post">
+    <div>
+        Delete to-do task: <strong>{{.Item}}</strong>?
+        <br/>
+        <button type="submit">Delete</button>
+    </div>
+</form>

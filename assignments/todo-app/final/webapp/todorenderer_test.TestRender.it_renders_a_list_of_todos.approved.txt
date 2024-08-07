@@ -1,29 +1,36 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>To-Do App</title>
+    <title>To-Do App &#9989;</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        html {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(to bottom, #add8e6, #ffffff);
+            padding: 20px;
+        }
         body {
             font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         table {
-            width: 60%;
             border-collapse: collapse;
-            margin-bottom: 8px;
+            width: 100%
         }
         th {
-            text-align: left;
+            color: #007bff;
             padding: 5px;
-            font-weight: bold;
+            text-align: center;
         }
         td {
-            padding: 5px;
-            border: 1px solid #ddd;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+            padding: 10px 20px;
+            border-bottom: 1px solid aliceblue;
+            text-align: center;
         }
         a {
             color: #007bff;
@@ -32,42 +39,129 @@
         a:hover {
             text-decoration: none;
         }
-        th:nth-child(3), th:nth-child(4),
-        td:nth-child(3), td:nth-child(4) {
-            width: 40px;
-            text-align: center;
+        th:nth-child(1), td:nth-child(1) {
+            text-align: left;
+            width: 100%;
+            padding: 10px 5px;
         }
+
+        .primary-button {
+            background-color: #3498db;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+        }
+        .primary-button:hover {
+            background-color: #2980b9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        input {
+            border-radius: 4px;
+            border: 1px solid #3498db;
+            padding: 4px;
+            height: 24px;
+            width: 250px;
+        }
+        input[type='checkbox'] {
+            height: 24px;
+            width: 24px;
+            color: #2980b9;
+         }
+        h1 {
+            text-align: center;
+            color: white;
+            text-shadow: 
+                -1px -1px 0 #000,  
+                1px -1px 0 #000,
+                -1px  1px 0 #000,
+                1px  1px 0 #000;
+        }
+        h2 {
+            font-weight: 400;
+        }
+        .container {
+            width: 70%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .strikethrough {
+            text-decoration: line-through;
+            opacity: 30%;
+        }
+        .navlinks {
+            margin-top: 40px;
+        }
+        form {
+            max-width: 500px;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-button {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
     </style>
 </head>
 <body>
-    <h1>To-Do List</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Task</th>
-                <th>Done</th>
-                <th>&nbsp;</th>
-                <th>&nbsp;</th>
-            </tr>
-        </thead>
-        <tbody>
-            
+<main>
+    <div class="banner">
+        <h1>Your To-do List &#9989;</h1>
+    </div>
+
+<div class="container">
+    
+        <p>You currently have 2 to-do task(s):</p>
+        <table>
+            <thead>
                 <tr>
-                    <td>Wash the car</td>
-                    <td>false</td>
-                    <td><a href="/edit/1">&#128221; edit</a></td>
-                    <td><a href="/delete/1">&#128465; delete</a></td>
+                    <th>Task</th>
+                    <th>Complete?</th>
+                    <th>&nbsp;</th>
+                    <th>&nbsp;</th>
                 </tr>
+            </thead>
+            <tbody>
+                
+                    <tr>
+                        <td >&#8226; Wash the car</td>
+                        <td>
+                                &#10060;
+                            
+                        </td>
+                        <td><a href="/edit/1">&#128221; Edit</a></td>
+                        <td><a href="/delete/1">&#128465; Delete</a></td>
+                    </tr>
+                
+                    <tr>
+                        <td >&#8226; Book holiday</td>
+                        <td>
+                                &#10060;
+                            
+                        </td>
+                        <td><a href="/edit/2">&#128221; Edit</a></td>
+                        <td><a href="/delete/2">&#128465; Delete</a></td>
+                    </tr>
+                
+            </tbody>
+        </table>
             
-                <tr>
-                    <td>Book holiday</td>
-                    <td>false</td>
-                    <td><a href="/edit/2">&#128221; edit</a></td>
-                    <td><a href="/delete/2">&#128465; delete</a></td>
-                </tr>
-            
-        </tbody>
-    </table>
-    <a href="/add">Add a to-do</a> 
-</body>
-</html>
+    
+    <div class="navlinks">
+        <a href="/add">Add a to-do</a>
+    </div>
+</div>
+
+

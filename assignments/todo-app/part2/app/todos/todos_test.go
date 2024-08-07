@@ -54,7 +54,7 @@ func TestTodos(t *testing.T) {
 	})
 	t.Run("todos delete", func(t *testing.T) {
 		gotTodos := Todos{Items: []Todo{washCar}}
-		gotTodos.DeleteTodoItem(1)
+		gotTodos.DeleteTodoItem("1")
 
 		assertTodos(t, gotTodos, Todos{})
 	})

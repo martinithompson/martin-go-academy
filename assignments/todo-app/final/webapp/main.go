@@ -156,7 +156,7 @@ func getTodoFromForm(request *http.Request) (string, bool) {
 	name := request.FormValue("name")
 	completed := request.FormValue("completed")
 
-	return name, checkboxValueToBool(completed)
+	return name, convertCheckboxValueToBool(completed)
 }
 
 func convertTodoToJSON(todo todos.Todo) []byte {
@@ -172,7 +172,7 @@ func getIdFromPath(path string) string {
 	return pathParams[len(pathParams)-1]
 }
 
-func checkboxValueToBool(value string) bool {
+func convertCheckboxValueToBool(value string) bool {
 	return value == "on"
 }
 

@@ -1,0 +1,9 @@
+<h1>Edit a todo</h1>
+<form action="/edit-todo/1" method="post">
+    <div>
+        Name: <input type="text" name="name" value="Wash the car"><br />
+        Completed: <input type="checkbox" name="completed" ><br />
+        <button type="submit">Update</button>
+        <a href="/list">Cancel</a>
+    </div>
+</form>

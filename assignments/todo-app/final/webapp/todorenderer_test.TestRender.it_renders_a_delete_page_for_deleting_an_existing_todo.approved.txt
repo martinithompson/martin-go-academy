@@ -1,0 +1,8 @@
+<h1>Delete a todo</h1>
+<form action="/delete-todo/1" method="post">
+    <div>
+        Delete to-do task: <strong>Wash the car</strong>?
+        <br/>
+        <button type="submit">Delete</button>
+    </div>
+</form>

@@ -1,7 +1,17 @@
-<h1>Add a todo</h1>
-<form action="/add-todo" method="post">
-    <div>
-        <input type="text" name="item">
-        <button type="submit">Add</button>
+{{template "top" .}}
+
+<div class="container">
+    <h2>Add a todo</h2>
+    <form action="/add-todo" method="post">
+        <div>
+            Name: <input type="text" name="name"><br />
+            <button class="primary-button" type="submit">Add</button>
+        </div>
+    </form>
+     <div class="navlinks">
+         <a href="/list">Back</a>
     </div>
-</form>
+   
+</div>
+
+{{template "bottom" .}}

@@ -1,3 +1,5 @@
+{{template "top" .}}
+
 <h1>Delete a todo</h1>
 <form action="/delete-todo/{{.Id}}" method="post">
     <div>
@@ -6,3 +8,5 @@
         <button type="submit">Delete</button>
     </div>
 </form>
+
+{{template "bottom" .}}

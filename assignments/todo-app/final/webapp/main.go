@@ -80,10 +80,9 @@ func handleRenderDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAddTodo(writer http.ResponseWriter, request *http.Request) {
-	item, _ := getTodoFromForm(request)
-	newTodo := todos.Todo{Name: item, Completed: false}
+	name, _ := getTodoFromForm(request)
+	newTodo := todos.Todo{Name: name, Completed: false}
 	jsonData := convertTodoToJSON(newTodo)
-
 	resp, err := http.Post(apiBaseUrl, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Fatalf("Error making POST request: %v", err)

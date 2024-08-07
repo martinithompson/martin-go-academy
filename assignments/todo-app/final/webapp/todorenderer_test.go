@@ -44,6 +44,24 @@ func TestRender(t *testing.T) {
 
 		approvals.VerifyString(t, buf.String())
 	})
+	t.Run("it renders an edit page for editing an existing todo", func(t *testing.T) {
+		buf := bytes.Buffer{}
+		editTodo := todos.Todo{Name: "Wash the car", Id: "1"}
+		if err := todoRenderer.Edit(&buf, editTodo); err != nil {
+			t.Fatal(err)
+		}
+
+		approvals.VerifyString(t, buf.String())
+	})
+	t.Run("it renders a delete page for deleting an existing todo", func(t *testing.T) {
+		buf := bytes.Buffer{}
+		deleteTodo := todos.Todo{Name: "Wash the car", Id: "1"}
+		if err := todoRenderer.Delete(&buf, deleteTodo); err != nil {
+			t.Fatal(err)
+		}
+
+		approvals.VerifyString(t, buf.String())
+	})
 }
 
 func BenchmarkRender(b *testing.B) {

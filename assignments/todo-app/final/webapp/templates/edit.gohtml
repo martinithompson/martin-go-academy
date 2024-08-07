@@ -1,7 +1,7 @@
 <h1>Edit a todo</h1>
 <form action="/edit-todo/{{.Id}}" method="post">
     <div>
-        Item: <input type="text" name="item" value="{{.Item}}"><br />
+        Name: <input type="text" name="name" value="{{.Name}}"><br />
         Completed: <input type="checkbox" name="completed" {{if .Completed}}checked{{end}}><br />
         <button type="submit">Update</button>
         <a href="/list">Cancel</a>

@@ -40,6 +40,22 @@ func (r *TodoRenderer) Add(w io.Writer, t []todos.Todo) error {
 	return nil
 }
 
+func (r *TodoRenderer) Edit(w io.Writer, t todos.Todo) error {
+	if err := r.templ.ExecuteTemplate(w, "edit.gohtml", t); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *TodoRenderer) Delete(w io.Writer, t todos.Todo) error {
+	if err := r.templ.ExecuteTemplate(w, "delete.gohtml", t); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // package main
 
 // import (

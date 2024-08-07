@@ -1,7 +1,6 @@
-package blogrenderer_test
+package main
 
 import (
-	"blogrenderer"
 	"bytes"
 	"io"
 	"testing"
@@ -11,7 +10,7 @@ import (
 
 func TestRender(t *testing.T) {
 	var (
-		aPost = blogrenderer.Post{
+		aPost = Post{
 			Title:       "hello world",
 			Body:        "This is a post",
 			Description: "This is a description",
@@ -19,7 +18,7 @@ func TestRender(t *testing.T) {
 		}
 	)
 
-	postRenderer, err := blogrenderer.NewPostRenderer()
+	postRenderer, err := NewPostRenderer()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,12 +31,11 @@ func TestRender(t *testing.T) {
 
 		approvals.VerifyString(t, buf.String())
 	})
-	t.Run()
 }
 
 func BenchmarkRender(b *testing.B) {
 	var (
-		aPost = blogrenderer.Post{
+		aPost = Post{
 			Title:       "hello world",
 			Body:        "This is a post",
 			Description: "This is a description",
@@ -45,7 +43,7 @@ func BenchmarkRender(b *testing.B) {
 		}
 	)
 
-	postRenderer, _ := blogrenderer.NewPostRenderer()
+	postRenderer, _ := NewPostRenderer()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

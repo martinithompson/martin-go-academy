@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>To-Do App</title>
+    <title>To-Do App &#9989;</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         html {
@@ -25,13 +25,11 @@
         th {
             color: #007bff;
             padding: 5px;
-            width: 60px;
             text-align: center;
         }
         td {
-            padding: 10px 5px;
+            padding: 10px 20px;
             border-bottom: 1px solid aliceblue;
-            width: 60px;
             text-align: center;
         }
         a {
@@ -44,6 +42,7 @@
         th:nth-child(1), td:nth-child(1) {
             text-align: left;
             width: 100%;
+            padding: 10px 5px;
         }
 
         .primary-button {
@@ -67,10 +66,15 @@
         input {
             border-radius: 4px;
             border: 1px solid #3498db;
-            height: 20px;
-            width: 250px;
             padding: 4px;
+            height: 24px;
+            width: 250px;
         }
+        input[type='checkbox'] {
+            height: 24px;
+            width: 24px;
+            color: #2980b9;
+         }
         h1 {
             text-align: center;
             color: white;
@@ -95,11 +99,25 @@
         .navlinks {
             margin-top: 40px;
         }
+        form {
+            max-width: 500px;
+        }
+        .form-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-button {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
     </style>
 </head>
 <body>
 <main>
     <div class="banner">
-        <h1>Your To-do List</h1>
+        <h1>Your To-do List &#9989;</h1>
     </div>
 {{end}}

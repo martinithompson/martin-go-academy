@@ -1,11 +1,17 @@
 {{template "top" .}}
 
 <div class="container">
-    <h2>Edit a to-do</h2>
+    <h2>&#128221; Edit a to-do</h2>
     <form action="/edit-todo/{{.Id}}" method="post">
-        <div>
-            Name: <input type="text" name="name" value="{{.Name}}"><br />
-            Completed: <input type="checkbox" name="completed" {{if .Completed}}checked{{end}}><br />
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" value="{{.Name}}">
+        </div>
+        <div class="form-group">
+            <label for="completed">Completed:</label>
+            <input type="checkbox" id="completed" name="completed" {{if .Completed}}checked{{end}}>
+        </div>
+        <div class="form-button">
             <button class="primary-button" type="submit">Update</button>
         </div>
     </form>

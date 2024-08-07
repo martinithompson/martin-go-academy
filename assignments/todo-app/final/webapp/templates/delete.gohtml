@@ -1,12 +1,16 @@
 {{template "top" .}}
 
-<h1>Delete a todo</h1>
-<form action="/delete-todo/{{.Id}}" method="post">
-    <div>
-        Delete to-do task: <strong>{{.Name}}</strong>?
-        <br/>
-        <button type="submit">Delete</button>
+<div class="container">
+    <h2>&#128465; Delete a to-do</h2>
+    <form action="/delete-todo/{{.Id}}" method="post">
+        Are you sure you want to delete to-do task: <strong>{{.Name}}</strong>?
+        <div class="form-button">
+            <button class="primary-button" type="submit">Delete</button>
+        </div>
+    </form>
+    <div class="navlinks">
+        <a href="/list">Back</a>
     </div>
-</form>
+</div>
 
 {{template "bottom" .}}

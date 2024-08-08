@@ -54,14 +54,14 @@ func handleRenderList(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
 
-	// save to global state
+	// save to local state so don't have to re-call get request on add/edit/delete pages. not sure if good idea!?
 	localStore.Items = todoData
 	err = renderer.List(w, localStore.Items)
 	handleHttpError(w, err)
 }
 
 func handleRenderAdd(w http.ResponseWriter, r *http.Request) {
-	err := renderer.Add(w, nil)
+	err := renderer.Add(w)
 	handleHttpError(w, err)
 }
 

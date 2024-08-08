@@ -38,7 +38,7 @@ func TestRender(t *testing.T) {
 	})
 	t.Run("it renders an add page for adding a new todo", func(t *testing.T) {
 		buf := bytes.Buffer{}
-		if err := todoRenderer.Add(&buf, nil); err != nil {
+		if err := todoRenderer.Add(&buf); err != nil {
 			t.Fatal(err)
 		}
 

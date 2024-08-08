@@ -87,6 +87,22 @@ func TestTodosHandler(t *testing.T) {
 	// })
 }
 
+func BenchmarkGetTodoHandler(b *testing.B) {
+	server := Server{}
+	server.cmds = startTodoManager()
+
+	for i := 0; i < b.N; i++ {
+		req, _ := http.NewRequest(http.MethodGet, "/todos", nil)
+
+		rec := httptest.NewRecorder()
+		server.todosHandler(rec, req)
+
+		if rec.Code != http.StatusOK {
+			b.Errorf("incorrect status code: got %d want %d", rec.Code, http.StatusOK)
+		}
+	}
+}
+
 func assertStatusCode(t *testing.T, got, want int) {
 	t.Helper()
 	if got != want {

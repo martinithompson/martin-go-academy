@@ -34,3 +34,7 @@ type Shape interface {
 	Area() float64
 }
 In Go interface resolution is implicit. If the type you pass in matches what the interface is asking for, it will compile.
+
+FOREVER
+
+forever go run . - loop execution forever
